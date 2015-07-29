@@ -1,25 +1,28 @@
 package phash
 
 import (
+	"fmt"
 	"image"
 	// "github.com/hawx/img/greyscale"
-	"code.google.com/p/biogo.matrix"
+	"github.com/disintegration/gift"
+	"github.com/gonum/matrix/mat64"
 
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand [jpeg|gif|png] formatted images.
+	_ "code.google.com/p/graphics-go/graphics"
+	"github.com/verisart/phash/manipulator"
+	"github.com/verisart/phash/radon"
 	_ "golang.org/x/image/bmp"
 	_ "golang.org/x/image/tiff"
-	_ "code.google.com/p/graphics-go/graphics"
-	"github.com/azr/phash/manipulator"
-	"github.com/azr/phash/radon"
 	// _ "github.com/kavu/go-phash"
 	"github.com/nfnt/resize"
 	_ "github.com/smartystreets/goconvey/convey"
 	_ "image/gif"
-	_ "image/jpeg"
+	//"image/jpeg"
 	_ "image/png"
 	"math"
+	//"os"
 	"sort"
 )
 
@@ -83,6 +86,7 @@ func GreyscaleDct(img image.Gray) uint64 {
 	}
 	total -= DCTMatrix[0][0]
 	avg := total / float64(((N/2)*(M/2))-1)
+	fmt.Println("got average ", avg)
 	var hash uint64
 	for u := 0; u < N/2; u++ {
 		for v := 0; v < M/2; v++ {
@@ -96,56 +100,224 @@ func GreyscaleDct(img image.Gray) uint64 {
 	return hash
 }
 
-func dctMatrixRow(N, M, x int, c0, c1 float64) []float64 {
-	row := make([]float64, M)
-	row[0] = c0
-	for y := 1; y < M; y++ {
-		row[y] = c1 * math.Cos((math.Pi/2.0/float64(N))*float64(y)*(2.0*float64(x)+1.0))
-	}
-
-	return row
-}
-
-func createDctMatrix(N, M int) (*matrix.Dense, error) {
-	mtx := make([][]float64, N)
+func createDctMatrix(N, M int) (*mat64.Dense, error) {
+	rows := N
+	cols := M
+	mtx := make([]float64, rows*cols)
 	c1 := math.Sqrt(2.0 / float64(N))
 	c0 := 1 / math.Sqrt(float64(M))
-	for x := 0; x < N; x++ {
-		mtx[x] = dctMatrixRow(N, M, x, c0, c1)
+	for x := 0; x < cols; x++ {
+		//mtx[x] = dctMatrixRow(N, M, x, c0, c1)
+
+		//row := make([]float64, M)
+		//row[0] = c0
+		mtx[x] = c0
+		for y := 1; y < rows; y++ {
+			mtx[y*cols+x] = c1 * math.Cos((math.Pi/2.0/float64(N))*float64(y)*(2.0*float64(x)+1.0))
+		}
 	}
 
-	return matrix.NewDense(mtx)
+	return mat64.NewDense(rows, cols, mtx), nil
+}
+
+type FloatMatrix [][]float64
+
+func NewFloatMatrix(rows int, columns int) FloatMatrix {
+	r := make([][]float64, rows)
+	for ii := 0; ii < rows; ii++ {
+		r[ii] = make([]float64, columns)
+	}
+	return FloatMatrix(r)
+}
+
+func (m FloatMatrix) Rows() int {
+	return len(m)
+}
+
+func (m FloatMatrix) Columns() int {
+	if len(m) > 0 {
+		return len(m[0])
+	}
+	return 0
+}
+
+func (m FloatMatrix) Transposed() FloatMatrix {
+	t := NewFloatMatrix(m.Columns(), m.Rows())
+	for ii := 0; ii < m.Rows(); ii++ {
+		for jj := 0; jj < m.Columns(); jj++ {
+			t[ii][jj] = m[jj][ii]
+		}
+	}
+	return t
+}
+
+func (m FloatMatrix) SubMatrix(x int, y int, rows int, columns int) (FloatMatrix, error) {
+	if x+rows > m.Rows() {
+		return nil, fmt.Errorf("can't extract %d rows starting at %d, matrix has %d rows", rows, x, m.Rows())
+	}
+	if y+columns > m.Columns() {
+		return nil, fmt.Errorf("can't extract %d columns starting at %d, matrix has %d columns", columns, y, m.Columns())
+	}
+	s := NewFloatMatrix(rows, columns)
+	for ii := 0; ii < rows; ii++ {
+		for jj := 0; jj < columns; jj++ {
+			s[ii][jj] = m[ii+x][jj+y]
+		}
+	}
+	return s, nil
+}
+
+func (m FloatMatrix) Multiply(n FloatMatrix) (FloatMatrix, error) {
+	if m.Columns() != n.Rows() {
+		return nil, fmt.Errorf("can't multiply matrix with %d columns by matrix with %d rows", m.Columns(), n.Rows())
+	}
+	p := NewFloatMatrix(m.Rows(), n.Columns())
+	end := m.Columns()
+	for ii := 0; ii < p.Rows(); ii++ {
+		for jj := 0; jj < p.Columns(); jj++ {
+			for kk := 0; kk < end; kk++ {
+				p[ii][jj] += m[ii][kk] * n[kk][jj]
+			}
+		}
+	}
+	return p, nil
+}
+
+// UnrollX returns all values in a slice which contains
+// all rows in increasing order.
+func (m FloatMatrix) UnrollX() []float64 {
+	values := make([]float64, 0, m.Rows()*m.Columns())
+	for ii := 0; ii < m.Columns(); ii++ {
+		for jj := 0; jj < m.Rows(); jj++ {
+			values = append(values, m[jj][ii])
+		}
+	}
+	return values
+}
+
+// UnrollX returns all values in a slice which contains
+// all columns in increasing order.
+func (m FloatMatrix) UnrollY() []float64 {
+	values := make([]float64, 0, m.Rows()*m.Columns())
+	for _, v := range m {
+		values = append(values, v...)
+	}
+	return values
+}
+
+func NewDCTMatrix(order int) FloatMatrix {
+	m := NewFloatMatrix(order, order)
+	c0 := 1 / math.Sqrt(float64(order))
+	c1 := math.Sqrt(2 / float64(order))
+	for ii := 0; ii < order; ii++ {
+		m[ii][0] = c0
+		for jj := 1; jj < order; jj++ {
+			m[ii][jj] = c1 * math.Cos((math.Pi/2/float64(order))*float64(jj)*(2*float64(ii)+1))
+		}
+	}
+	return m
 }
 
 // GreyscaleDctMatrix Computes the Dct of a greyscale image using matrixes
-func GreyscaleDctMatrix(img image.Gray) uint64 {
-	imgMtx, err := manipulator.GrayImageToMatrix(img)
-	if err != nil {
-		panic(err)
-	}
-	dctMtx, err := createDctMatrix(img.Bounds().Max.X, img.Bounds().Max.Y)
-	if err != nil {
-		panic(err)
-	}
-	dctMtxTransp := dctMtx.T(nil) // Transpose
+func GreyscaleDctMatrix(im image.Image) uint64 {
+	greyFilter := gift.Grayscale()
 
-	dctImage := dctMtx.Dot(imgMtx, nil).Dot(dctMtxTransp, nil)
+	convFilter := gift.Convolution([]float32{
+		1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1,
+		1, 1, 1, 1, 1, 1, 1,
+	}, true, false, false, 0)
+	resizeFilter := gift.Resize(32, 32, gift.LinearResampling)
+	g := gift.New(greyFilter, convFilter, resizeFilter)
+	dst := image.NewRGBA(g.Bounds(im.Bounds()))
+	g.Draw(dst, im)
 
-	dctImage, err = manipulator.CropMatrix(dctImage, 0, 0, 7, 7)
-	if err != nil {
-		panic(err)
-	}
-	subsec := matrix.ElementsVector(dctImage)
-	median := median(subsec)
-	var one, hash uint64 = 1, 0
-	for i := 0; i < len(subsec); i++ {
-		current := subsec[i]
-		if current > median {
-			hash |= one
+	//width := im.Bounds().Max.X
+	//height := im.Bounds().Max.Y
+	m := make([][]float64, 32)
+	for i := 0; i < 32; i++ {
+		m[i] = make([]float64, 32)
+		for j := 0; j < 32; j++ {
+			_, _, b, _ := dst.At(i, j).RGBA()
+			m[i][j] = float64(b)
 		}
-		one = one << 1
 	}
+	/*
+		out, _ := os.Create("/Users/danielriley/desktop/output.jpg")
+		var opt jpeg.Options
+		opt.Quality = 80
+		_ = jpeg.Encode(out, dst, &opt) // put quality to 80%
+
+		out1, _ := os.Create("/Users/danielriley/desktop/output1.jpg")
+		opt.Quality = 80
+		_ = jpeg.Encode(out1, im, &opt) // put quality to 80%
+	*/
+	imMatrix := FloatMatrix(m)
+	dctMatrix := NewDCTMatrix(32)
+
+	// We can safely ignore errors here, since the sizes
+	// always match.
+	dct, _ := dctMatrix.Multiply(imMatrix)
+
+	dct, _ = dct.Multiply(dctMatrix.Transposed())
+
+	sub, _ := dct.SubMatrix(1, 1, 8, 8)
+
+	values := sub.UnrollX()
+
+	// We need the original values, so we must sort a copy
+	cpy := make([]float64, len(values))
+	copy(cpy, values)
+	sort.Float64s(cpy)
+	median := (cpy[64/2-1] + cpy[64/2]) / 2
+	fmt.Println("got median ", median)
+	bit := uint64(1)
+	hash := uint64(0)
+	for _, v := range values {
+		if v > median {
+			hash |= bit
+		}
+		bit <<= 1
+	}
+
+	fmt.Println("calculated hash ", hash)
 	return hash
+
+	/*
+		imgMtx, err := manipulator.GrayImageToMatrix(img)
+		if err != nil {
+			panic(err)
+		}
+		dctMtx, err := createDctMatrix(img.Bounds().Max.X, img.Bounds().Max.Y)
+		if err != nil {
+			panic(err)
+		}
+
+		dctMtxTransp := dctMtx.T() // Transpose
+
+		dctMtx.Mul(dctMtx, imgMtx)
+		dctMtx.Mul(dctMtx, dctMtxTransp)
+
+		dctImage, err := manipulator.CropMatrix(dctMtx, 0, 0, 7, 7)
+		if err != nil {
+			panic(err)
+		}
+		subsec := dctImage.RawMatrix().Data
+		median := median(subsec)
+		var one, hash uint64 = 1, 0
+		for i := 0; i < len(subsec); i++ {
+			current := subsec[i]
+			if current > median {
+				hash |= one
+			}
+			one = one << 1
+		}
+		return hash
+	*/
 }
 
 //ComputeGreyscaleDct puts the result of GreyscaleDct in a digest
@@ -161,11 +333,11 @@ func (d *ImageDigest) ComputeGreyscaleDct() error {
 
 //ComputeGreyscaleDctMatrix puts the result of GreyscaleDctMatrix in a digest
 func (d *ImageDigest) ComputeGreyscaleDctMatrix() error {
-	stamp := resize.Resize(32, 32, d.Radon.Image, resize.Bilinear)
-	greyscaleStamp := manipulator.ImageToGrayscale(stamp)
+	//stamp := resize.Resize(32, 32, d.Radon.Image, resize.Bilinear)
+	//greyscaleStamp := manipulator.ImageToGrayscale(stamp)
 
 	// greyscaleStamp := greyscale.Greyscale(stamp)
-	d.PhashMatrix = GreyscaleDctMatrix(greyscaleStamp)
+	d.PhashMatrix = GreyscaleDctMatrix(d.Radon.Image)
 
 	return nil
 }

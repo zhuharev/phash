@@ -1,12 +1,13 @@
 package phash_test
 
 import (
+	"fmt"
 	// "github.com/azer-/phash"
 	"code.google.com/p/graphics-go/graphics"
-	"github.com/azr/phash"
-	"github.com/azr/phash/manipulator"
-	"github.com/azr/phash/radon"
 	. "github.com/smartystreets/goconvey/convey"
+	"github.com/verisart/phash"
+	"github.com/verisart/phash/manipulator"
+	"github.com/verisart/phash/radon"
 	"testing"
 )
 
@@ -54,6 +55,7 @@ func getImgBag(dir, filename string, angle Angle) *ImageBag {
 func PairExecuteFor2ImagesList(imagesA []*ImageBag, imagesB []*ImageBag, f func(*ImageBag, *ImageBag)) {
 	for _, imageA := range imagesA {
 		for _, imageB := range imagesB {
+			fmt.Println("checking ", imageA.Filename, imageB.Filename)
 			f(imageA, imageB)
 		}
 	}
@@ -89,8 +91,11 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 		})
 
 		Convey("When DCTMatrix Hashes are computed", func() {
+			fmt.Println("checking catBig")
 			catBig.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("checking catMedium")
 			catMedium.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("checking catSmall")
 			catSmall.ImageDigest.ComputeGreyscaleDctMatrix()
 
 			Convey("Then the hashes should not be zero", func() {
@@ -109,29 +114,29 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 			})
 
 		})
+		/*
+			Convey("When CDCT Hashes are computed", func() {
+				catBig.ComputeImageHashPhash(false)
+				catMedium.ComputeImageHashPhash(false)
+				catSmall.ComputeImageHashPhash(false)
 
-		Convey("When CDCT Hashes are computed", func() {
-			catBig.ComputeImageHashPhash(false)
-			catMedium.ComputeImageHashPhash(false)
-			catSmall.ComputeImageHashPhash(false)
+				Convey("Then the hashes should not be zero", func() {
+					So(catBig.CPhash, ShouldNotEqual, 0)
+					So(catMedium.CPhash, ShouldNotEqual, 0)
+					So(catSmall.CPhash, ShouldNotEqual, 0)
+				})
 
-			Convey("Then the hashes should not be zero", func() {
-				So(catBig.CPhash, ShouldNotEqual, 0)
-				So(catMedium.CPhash, ShouldNotEqual, 0)
-				So(catSmall.CPhash, ShouldNotEqual, 0)
+				Convey("Then Hamming Distance should be under threshold ", func() {
+					distance := phash.HammingDistance(catBig.CPhash, catMedium.CPhash)
+					So(distance, ShouldBeLessThanOrEqualTo, Treshold)
+					distance = phash.HammingDistance(catBig.CPhash, catSmall.CPhash)
+					So(distance, ShouldBeLessThanOrEqualTo, Treshold)
+					distance = phash.HammingDistance(catMedium.CPhash, catSmall.CPhash)
+					So(distance, ShouldBeLessThanOrEqualTo, Treshold)
+				})
+
 			})
-
-			Convey("Then Hamming Distance should be under threshold ", func() {
-				distance := phash.HammingDistance(catBig.CPhash, catMedium.CPhash)
-				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-				distance = phash.HammingDistance(catBig.CPhash, catSmall.CPhash)
-				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-				distance = phash.HammingDistance(catMedium.CPhash, catSmall.CPhash)
-				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-			})
-
-		})
-
+		*/
 		SkipConvey("When Radon Hashes are computed", func() {
 			catBig.ComputeImageHashRadon(false)
 			catMedium.ComputeImageHashRadon(false)
@@ -173,7 +178,9 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 		})
 
 		Convey("When DCTMatrix Hashes are computed", func() {
+			fmt.Println("checking sunBig")
 			sunBig.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("checking sunSmall")
 			sunSmall.ImageDigest.ComputeGreyscaleDctMatrix()
 
 			Convey("Then the hashes should not be zero", func() {
@@ -189,24 +196,24 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 			})
 
 		})
+		/*
+			Convey("When CDCT Hashes are computed", func() {
+				sunBig.ComputeImageHashPhash(false)
+				sunSmall.ComputeImageHashPhash(false)
 
-		Convey("When CDCT Hashes are computed", func() {
-			sunBig.ComputeImageHashPhash(false)
-			sunSmall.ComputeImageHashPhash(false)
+				Convey("Then the hashes should not be zero", func() {
+					So(sunBig.CPhash, ShouldNotEqual, 0)
+					So(sunSmall.CPhash, ShouldNotEqual, 0)
+				})
 
-			Convey("Then the hashes should not be zero", func() {
-				So(sunBig.CPhash, ShouldNotEqual, 0)
-				So(sunSmall.CPhash, ShouldNotEqual, 0)
-			})
+				Convey("Then Hamming Distance should be under threshold ", func() {
+					distance := phash.HammingDistance(sunBig.CPhash, sunSmall.CPhash)
+					So(distance, ShouldBeLessThanOrEqualTo, Treshold)
+					distance = phash.HammingDistance(sunBig.CPhash, sunSmall.CPhash)
+					So(distance, ShouldBeLessThanOrEqualTo, Treshold)
+				})
 
-			Convey("Then Hamming Distance should be under threshold ", func() {
-				distance := phash.HammingDistance(sunBig.CPhash, sunSmall.CPhash)
-				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-				distance = phash.HammingDistance(sunBig.CPhash, sunSmall.CPhash)
-				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-			})
-
-		})
+			})*/
 
 		Convey("When Radon Hashes are computed", func() {
 			sunBig.ComputeImageHashRadon(false)
@@ -244,7 +251,7 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 		catSmile := getImgBag(catsDir, "smiling.jpg", 0)
 		cats := []*ImageBag{catBig, catMedium, catSmall, catSky, catSmile}
 
-		lenaToshop := getImgBag(lenaDir, "lena_std.tiff", 0)
+		lenaToshop := getImgBag(lenaDir, "lena_std.jpg", 0)
 		lenaNkd := getImgBag(lenaDir, "l_hires.jpg", 0)
 		lenaVintage := getImgBag(lenaDir, "lena.bmp", 0)
 		girls := []*ImageBag{lenaToshop, lenaNkd, lenaVintage}
@@ -293,22 +300,31 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 
 		Convey("When DCTMatrix Hashes are computed", func() {
 
+			fmt.Println("catBig")
 			catBig.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("catMedium")
 			catMedium.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("catSmall")
 			catSmall.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("catSky")
 			catSky.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("catSmile")
 			catSmile.ImageDigest.ComputeGreyscaleDctMatrix()
-
+			fmt.Println("lenaToshop")
 			lenaToshop.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("lenankd")
 			lenaNkd.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("lenavintage")
 			lenaVintage.ImageDigest.ComputeGreyscaleDctMatrix()
-
+			fmt.Println("sunbig")
 			sunBig.ImageDigest.ComputeGreyscaleDctMatrix()
+			fmt.Println("sunsmall")
 			sunSmall.ImageDigest.ComputeGreyscaleDctMatrix()
 
 			Convey("Then cats do not look like girls", func() {
 				PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
 					distance := phash.HammingDistance(cat.PhashMatrix, girl.PhashMatrix)
+					fmt.Printf("distance from %s to %s is %d\n", cat.Filename, girl.Filename, distance)
 					So(distance, ShouldBeGreaterThan, Treshold)
 				})
 			})
@@ -316,6 +332,7 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 			Convey("And suns do not look like cats", func() {
 				PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
 					distance := phash.HammingDistance(sun.PhashMatrix, cat.PhashMatrix)
+
 					So(distance, ShouldBeGreaterThan, Treshold)
 				})
 			})
@@ -323,50 +340,51 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 			Convey("And girls do not look like suns", func() {
 				PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
 					distance := phash.HammingDistance(sun.PhashMatrix, girl.PhashMatrix)
+
 					So(distance, ShouldBeGreaterThan, Treshold)
 				})
 			})
 
 		})
+		/*
+			Convey("When CDCT Hashes are computed", func() {
 
-		Convey("When CDCT Hashes are computed", func() {
+				catBig.ComputeImageHashPhash(false)
+				catMedium.ComputeImageHashPhash(false)
+				catSmall.ComputeImageHashPhash(false)
+				catSky.ComputeImageHashPhash(false)
+				catSmile.ComputeImageHashPhash(false)
 
-			catBig.ComputeImageHashPhash(false)
-			catMedium.ComputeImageHashPhash(false)
-			catSmall.ComputeImageHashPhash(false)
-			catSky.ComputeImageHashPhash(false)
-			catSmile.ComputeImageHashPhash(false)
+				// lenaToshop.ComputeImageHashPhash(false)
+				lenaVintage.ComputeImageHashPhash(false)
+				lenaNkd.ComputeImageHashPhash(false)
+				girls := []*ImageBag{lenaVintage, lenaNkd}
 
-			// lenaToshop.ComputeImageHashPhash(false)
-			lenaVintage.ComputeImageHashPhash(false)
-			lenaNkd.ComputeImageHashPhash(false)
-			girls := []*ImageBag{lenaVintage, lenaNkd}
+				sunBig.ComputeImageHashPhash(false)
+				sunSmall.ComputeImageHashPhash(false)
 
-			sunBig.ComputeImageHashPhash(false)
-			sunSmall.ComputeImageHashPhash(false)
-
-			Convey("Then cats do not look like girls", func() {
-				PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
-					distance := phash.HammingDistance(cat.CPhash, girl.CPhash)
-					So(distance, ShouldBeGreaterThan, Treshold)
+				Convey("Then cats do not look like girls", func() {
+					PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
+						distance := phash.HammingDistance(cat.CPhash, girl.CPhash)
+						So(distance, ShouldBeGreaterThan, Treshold)
+					})
 				})
-			})
 
-			Convey("And suns do not look like cats", func() {
-				PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
-					distance := phash.HammingDistance(sun.CPhash, cat.CPhash)
-					So(distance, ShouldBeGreaterThan, Treshold)
+				Convey("And suns do not look like cats", func() {
+					PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
+						distance := phash.HammingDistance(sun.CPhash, cat.CPhash)
+						So(distance, ShouldBeGreaterThan, Treshold)
+					})
 				})
-			})
 
-			Convey("And girls do not look like suns", func() {
-				PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
-					distance := phash.HammingDistance(sun.CPhash, girl.CPhash)
-					So(distance, ShouldBeGreaterThan, Treshold)
+				Convey("And girls do not look like suns", func() {
+					PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
+						distance := phash.HammingDistance(sun.CPhash, girl.CPhash)
+						So(distance, ShouldBeGreaterThan, Treshold)
+					})
 				})
-			})
 
-		})
+			})*/
 
 		SkipConvey("When Radon Hashes are computed", func() {
 

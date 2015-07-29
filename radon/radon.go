@@ -3,10 +3,10 @@ package radon
 import (
 	"code.google.com/p/graphics-go/graphics"
 	"errors"
-	"github.com/azr/phash/floats"
-	"github.com/azr/phash/manipulator"
 	"github.com/disintegration/imaging"
 	"github.com/nfnt/resize"
+	"github.com/verisart/phash/floats"
+	"github.com/verisart/phash/manipulator"
 	"image"
 	"image/color"
 	"math"

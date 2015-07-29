@@ -4,10 +4,10 @@ import (
 	"io/ioutil"
 	"testing"
 	// "time"
-	"fmt"
+	//"fmt"
 	// "github.com/azr/phash/radon"
-	"github.com/azr/phash"
-	cphash "github.com/kavu/go-phash"
+	//cphash "github.com/kavu/go-phash"
+	"github.com/verisart/phash"
 	"image"
 	"os"
 	// "code.google.com/p/biogo.matrix"
@@ -17,9 +17,9 @@ import (
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand [jpeg|gif|png] formatted images.
+	_ "code.google.com/p/graphics-go/graphics"
 	_ "golang.org/x/image/bmp"
 	_ "golang.org/x/image/tiff"
-	_ "code.google.com/p/graphics-go/graphics"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
@@ -143,12 +143,12 @@ func (img *ImageBag) ComputeImageHashPhash(force bool) {
 	if force == false && img.CPhash != 0 {
 		return
 	}
-
-	hash, err := cphash.ImageHashDCT(img.Dir + img.Filename)
-	if err != nil {
-		fmt.Println("Error in ComputeImageHashPhash : ", err)
-	}
-	img.CPhash = hash
+	/*
+		hash, err := cphash.ImageHashDCT(img.Dir + img.Filename)
+		if err != nil {
+			fmt.Println("Error in ComputeImageHashPhash : ", err)
+		}
+		img.CPhash = hash*/
 }
 
 func (img *ImageBag) ComputeImageHashRadon(force bool) {
