@@ -3,6 +3,7 @@ package phash
 import (
 	"fmt"
 	"image"
+	"image/color"
 	// "github.com/hawx/img/greyscale"
 	"github.com/disintegration/gift"
 	"github.com/gonum/matrix/mat64"
@@ -235,7 +236,17 @@ func GreyscaleDctMatrix(im image.Image) uint64 {
 	g := gift.New(greyFilter, convFilter, resizeFilter)
 	dst := image.NewRGBA(g.Bounds(im.Bounds()))
 	g.Draw(dst, im)
+	/*
+		out, _ := os.Create("/Users/danielriley/desktop/output.jpg")
+		var opt jpeg.Options
+		opt.Quality = 80
+		_ = jpeg.Encode(out, dst, &opt) // put quality to 80%
 
+		out1, _ := os.Create("/Users/danielriley/desktop/output1.jpg")
+		opt.Quality = 80
+		_ = jpeg.Encode(out1, im, &opt) // put quality to 80%
+		return 0
+	*/
 	//width := im.Bounds().Max.X
 	//height := im.Bounds().Max.Y
 	m := make([][]float64, 32)
@@ -318,6 +329,24 @@ func GreyscaleDctMatrix(im image.Image) uint64 {
 		}
 		return hash
 	*/
+}
+
+func HashToImage(hash uint64) image.Image {
+	im := image.NewRGBA(image.Rect(0, 0, 8, 8))
+
+	bit := uint64(1)
+
+	for i := 0; i < 64; i++ {
+		if hash&bit != 0 {
+			im.Set(i%8, i/8, color.RGBA{0, 0, 0, 255})
+		} else {
+			im.Set(i%8, i/8, color.RGBA{255, 255, 255, 255})
+		}
+
+		bit <<= 1
+	}
+
+	return im
 }
 
 //ComputeGreyscaleDct puts the result of GreyscaleDct in a digest

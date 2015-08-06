@@ -15,6 +15,12 @@ var testImages = map[string]*ImageBag{}
 
 var Treshold = uint64(17)
 
+func hammingDist(a, b *ImageBag) uint64 {
+	dist := phash.HammingDistance(a.PhashMatrix, b.PhashMatrix)
+	fmt.Printf("dist between %s and %s is %d", a.Filename, b.Filename, dist)
+	return dist
+}
+
 func getImgBag(dir, filename string, angle Angle) *ImageBag {
 	img, found := testImages[dir+filename]
 	if !found {
@@ -64,38 +70,36 @@ func PairExecuteFor2ImagesList(imagesA []*ImageBag, imagesB []*ImageBag, f func(
 func TestAffineTransformedImagesMatch(t *testing.T) {
 
 	Convey("Given some cats are loaded", t, func() {
+
 		catBig := getImgBag(catsDir, "cat_big.jpg", 0)
 		catMedium := getImgBag(catsDir, "cat_medium.jpg", 0)
 		catSmall := getImgBag(catsDir, "cat_small.jpg", 0)
+		/*
+			Convey("When DCT Hashes are computed", func() {
+				catBig.ImageDigest.ComputeGreyscaleDct()
+				catMedium.ImageDigest.ComputeGreyscaleDct()
+				catSmall.ImageDigest.ComputeGreyscaleDct()
 
-		Convey("When DCT Hashes are computed", func() {
-			catBig.ImageDigest.ComputeGreyscaleDct()
-			catMedium.ImageDigest.ComputeGreyscaleDct()
-			catSmall.ImageDigest.ComputeGreyscaleDct()
+				Convey("Then the hashes should not be zero", func() {
+					So(catBig.Phash, ShouldNotEqual, 0)
+					So(catMedium.Phash, ShouldNotEqual, 0)
+					So(catSmall.Phash, ShouldNotEqual, 0)
+				})
 
-			Convey("Then the hashes should not be zero", func() {
-				So(catBig.Phash, ShouldNotEqual, 0)
-				So(catMedium.Phash, ShouldNotEqual, 0)
-				So(catSmall.Phash, ShouldNotEqual, 0)
+				Convey("And Hamming Distance should be under threshold ", func() {
+					distance := phash.HammingDistance(catBig.Phash, catMedium.Phash)
+					So(distance, ShouldBeLessThanOrEqualTo, Treshold)
+					distance = phash.HammingDistance(catBig.Phash, catSmall.Phash)
+					So(distance, ShouldBeLessThanOrEqualTo, Treshold)
+					distance = phash.HammingDistance(catMedium.Phash, catSmall.Phash)
+					So(distance, ShouldBeLessThanOrEqualTo, Treshold)
+				})
+
 			})
-
-			Convey("And Hamming Distance should be under threshold ", func() {
-				distance := phash.HammingDistance(catBig.Phash, catMedium.Phash)
-				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-				distance = phash.HammingDistance(catBig.Phash, catSmall.Phash)
-				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-				distance = phash.HammingDistance(catMedium.Phash, catSmall.Phash)
-				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-			})
-
-		})
-
+		*/
 		Convey("When DCTMatrix Hashes are computed", func() {
-			fmt.Println("checking catBig")
 			catBig.ImageDigest.ComputeGreyscaleDctMatrix()
-			fmt.Println("checking catMedium")
 			catMedium.ImageDigest.ComputeGreyscaleDctMatrix()
-			fmt.Println("checking catSmall")
 			catSmall.ImageDigest.ComputeGreyscaleDctMatrix()
 
 			Convey("Then the hashes should not be zero", func() {
@@ -105,11 +109,11 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 			})
 
 			Convey("Then Hamming Distance should be under threshold ", func() {
-				distance := phash.HammingDistance(catBig.PhashMatrix, catMedium.PhashMatrix)
+				distance := hammingDist(catBig, catMedium)
 				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-				distance = phash.HammingDistance(catBig.PhashMatrix, catSmall.PhashMatrix)
+				distance = hammingDist(catBig, catSmall)
 				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-				distance = phash.HammingDistance(catMedium.PhashMatrix, catSmall.PhashMatrix)
+				distance = hammingDist(catMedium, catSmall)
 				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
 			})
 
@@ -189,9 +193,9 @@ func TestAffineTransformedImagesMatch(t *testing.T) {
 			})
 
 			Convey("Then Hamming Distance should be under threshold ", func() {
-				distance := phash.HammingDistance(sunBig.PhashMatrix, sunSmall.PhashMatrix)
+				distance := hammingDist(sunBig, sunSmall)
 				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
-				distance = phash.HammingDistance(sunBig.PhashMatrix, sunSmall.PhashMatrix)
+				distance = hammingDist(sunBig, sunSmall)
 				So(distance, ShouldBeLessThanOrEqualTo, Treshold)
 			})
 
@@ -323,24 +327,21 @@ func TestDifferentImagesDoNotMatch(t *testing.T) {
 
 			Convey("Then cats do not look like girls", func() {
 				PairExecuteFor2ImagesList(cats, girls, func(cat, girl *ImageBag) {
-					distance := phash.HammingDistance(cat.PhashMatrix, girl.PhashMatrix)
-					fmt.Printf("distance from %s to %s is %d\n", cat.Filename, girl.Filename, distance)
+					distance := hammingDist(cat, girl)
 					So(distance, ShouldBeGreaterThan, Treshold)
 				})
 			})
 
 			Convey("And suns do not look like cats", func() {
 				PairExecuteFor2ImagesList(suns, cats, func(sun, cat *ImageBag) {
-					distance := phash.HammingDistance(sun.PhashMatrix, cat.PhashMatrix)
-
+					distance := hammingDist(sun, cat)
 					So(distance, ShouldBeGreaterThan, Treshold)
 				})
 			})
 
 			Convey("And girls do not look like suns", func() {
 				PairExecuteFor2ImagesList(girls, suns, func(girl, sun *ImageBag) {
-					distance := phash.HammingDistance(sun.PhashMatrix, girl.PhashMatrix)
-
+					distance := hammingDist(sun, girl)
 					So(distance, ShouldBeGreaterThan, Treshold)
 				})
 			})

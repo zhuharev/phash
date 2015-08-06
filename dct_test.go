@@ -27,6 +27,7 @@ import (
 
 var catsDir = "./testdata/cats/"
 var lenaDir = "./testdata/lena/"
+var artDir = "./testdata/art/"
 
 var gimages []ImageBag
 
@@ -84,7 +85,7 @@ func parseDirs(ch chan<- ImageBag, dirs ...string) (images []ImageBag) {
 
 func loadImages() []ImageBag {
 	if gimages == nil {
-		gimages = parseDirs(nil, lenaDir, catsDir)
+		gimages = parseDirs(nil, lenaDir, catsDir, artDir)
 	}
 	return gimages
 }
