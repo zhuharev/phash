@@ -46,7 +46,7 @@ func getImgBag(dir, filename string, angle Angle) *ImageBag {
 				Filename: filename,
 				Angle:    angle,
 				ImageDigest: phash.ImageDigest{
-					Radon: radon.ImageDigest{
+					Radon: &radon.ImageDigest{
 						Image:  draw,
 						Format: img.Radon.Format}}}
 			img.Rotations[angle] = &rImg

@@ -47,3 +47,14 @@ func DecodeAndDigest(r io.Reader) (digest *ImageDigest, err error) {
 
 	return
 }
+
+// NewFormImage returns new digest from an image
+func NewFormImage(img image.Image) (digest *ImageDigest, err error) {
+	digest = new(ImageDigest)
+
+	digest.Image = img
+
+	digest.ComputeRadonDigest()
+
+	return
+}

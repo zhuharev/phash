@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"image"
 	"image/color"
+	"io"
 	// "github.com/hawx/img/greyscale"
 	"github.com/disintegration/gift"
 	"github.com/gonum/matrix/mat64"
@@ -19,19 +20,38 @@ import (
 	// _ "github.com/kavu/go-phash"
 	_ "image/gif"
 
-	"github.com/nfnt/resize"
-	_ "github.com/smartystreets/goconvey/convey"
-	//"image/jpeg"
+	_ "image/jpeg"
 	_ "image/png"
 	"math"
+
+	"github.com/nfnt/resize"
+	_ "github.com/smartystreets/goconvey/convey"
 	//"os"
 	"sort"
 )
 
 type ImageDigest struct {
-	Radon       radon.ImageDigest
+	Radon       *radon.ImageDigest
 	Phash       uint64
 	PhashMatrix uint64
+}
+
+func NewFromReader(rdr io.Reader) (*ImageDigest, error) {
+	rdn, err := radon.DecodeAndDigest(rdr)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ImageDigest{Radon: rdn}, nil
+}
+
+func NewFromImage(img image.Image) (*ImageDigest, error) {
+	rdn, err := radon.NewFormImage(img)
+	if err != nil {
+		return nil, err
+	}
+
+	return &ImageDigest{Radon: rdn}, nil
 }
 
 func median(a []float64) float64 {
