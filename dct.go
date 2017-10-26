@@ -11,15 +11,16 @@ import (
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand [jpeg|gif|png] formatted images.
-	_ "code.google.com/p/graphics-go/graphics"
-	"github.com/verisart/phash/manipulator"
-	"github.com/verisart/phash/radon"
+	_ "github.com/BurntSushi/graphics-go/graphics"
+	"github.com/zhuharev/phash/manipulator"
+	"github.com/zhuharev/phash/radon"
 	_ "golang.org/x/image/bmp"
 	_ "golang.org/x/image/tiff"
 	// _ "github.com/kavu/go-phash"
+	_ "image/gif"
+
 	"github.com/nfnt/resize"
 	_ "github.com/smartystreets/goconvey/convey"
-	_ "image/gif"
 	//"image/jpeg"
 	_ "image/png"
 	"math"

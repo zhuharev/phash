@@ -1,7 +1,5 @@
 package floats
 
-import ()
-
 func sum(s []float64, pos int) float64 {
 	if pos == 0 {
 		return s[0]

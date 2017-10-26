@@ -3,12 +3,13 @@ package phash_test
 import (
 	"fmt"
 	// "github.com/azer-/phash"
-	"code.google.com/p/graphics-go/graphics"
-	. "github.com/smartystreets/goconvey/convey"
-	"github.com/verisart/phash"
-	"github.com/verisart/phash/manipulator"
-	"github.com/verisart/phash/radon"
 	"testing"
+
+	"github.com/BurntSushi/graphics-go/graphics"
+	. "github.com/smartystreets/goconvey/convey"
+	"github.com/zhuharev/phash"
+	"github.com/zhuharev/phash/manipulator"
+	"github.com/zhuharev/phash/radon"
 )
 
 var testImages = map[string]*ImageBag{}

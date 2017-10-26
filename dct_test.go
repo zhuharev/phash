@@ -1,28 +1,23 @@
 package phash_test
 
 import (
-	"io/ioutil"
-	"testing"
-	// "time"
-	//"fmt"
-	// "github.com/azr/phash/radon"
-	//cphash "github.com/kavu/go-phash"
-	"github.com/verisart/phash"
 	"image"
+	"io/ioutil"
 	"os"
-	// "code.google.com/p/biogo.matrix"
-	// "github.com/hawx/img/greyscale"
-	// "image/color"
+	"testing"
+
+	"github.com/zhuharev/phash"
 
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand [jpeg|gif|png] formatted images.
-	_ "code.google.com/p/graphics-go/graphics"
-	_ "golang.org/x/image/bmp"
-	_ "golang.org/x/image/tiff"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+
+	_ "github.com/BurntSushi/graphics-go/graphics"
+	_ "golang.org/x/image/bmp"
+	_ "golang.org/x/image/tiff"
 )
 
 var catsDir = "./testdata/cats/"

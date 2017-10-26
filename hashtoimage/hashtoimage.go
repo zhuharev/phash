@@ -9,7 +9,7 @@ import "log"
 import "image"
 import "image/jpeg"
 import "image/png"
-import "github.com/verisart/phash"
+import "github.com/zhuharev/phash"
 
 func init() {
 	// damn important or else At(), Bounds() functions will

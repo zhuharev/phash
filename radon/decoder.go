@@ -6,11 +6,12 @@ import (
 	// Package image/[jpeg|fig|png] is not used explicitly in the code below,
 	// but is imported for its initialization side-effect, which allows
 	// image.Decode to understand [jpeg|gif|png] formatted images.
-	_ "golang.org/x/image/bmp"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
+
+	_ "golang.org/x/image/bmp"
 )
 
 //ImageDigest will contain digested dct/radon/other digest

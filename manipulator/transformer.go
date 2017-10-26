@@ -1,11 +1,12 @@
 package manipulator
 
 import (
-	"github.com/gonum/matrix/mat64"
 	"image"
 	"image/color"
 	"image/draw"
 	"math"
+
+	"github.com/gonum/matrix/mat64"
 )
 
 func CropMatrix(src mat64.Matrix, x0, y0, x1, y1 int) (*mat64.Dense, error) {

@@ -1,15 +1,16 @@
 package radon
 
 import (
-	"code.google.com/p/graphics-go/graphics"
 	"errors"
-	"github.com/disintegration/imaging"
-	"github.com/nfnt/resize"
-	"github.com/verisart/phash/floats"
-	"github.com/verisart/phash/manipulator"
 	"image"
 	"image/color"
 	"math"
+
+	"github.com/BurntSushi/graphics-go/graphics"
+	"github.com/disintegration/imaging"
+	"github.com/nfnt/resize"
+	"github.com/zhuharev/phash/floats"
+	"github.com/zhuharev/phash/manipulator"
 )
 
 const (
